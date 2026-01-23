@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Your Order | upper crust</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header with logo link -->
+        <header>
+            <a href="index.html" class="logo-link">
+                <h1 class="logo">upper crust</h1>
+            </a>
+        </header>
+        
+        <!-- Main order section with two-column layout -->
+        <main class="order-main">
+            <section class="order-section">
+                <!-- Left column: Bread image with film grain -->
+                <div class="order-image-wrapper">
+                    <img src="images/jam%20and%20cream%20grain.jpg" alt="Jam and cream on bread" class="order-image grain-overlay">
+                    <div class="film-grain"></div>
+                </div>
+                
+                <!-- Right column: Order form -->
+                <div class="order-form-container">
+                    <h2 class="order-title">Place Your Order</h2>
+                    <p class="order-subtitle">Fresh ciabatta, made to order and delivered to your door</p>
+                    
+                    <form id="orderForm" class="order-form">
+                        <!-- Customer Information -->
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="(555) 123-4567">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apartment">Apartment Number</label>
+                            <input type="text" id="apartment" name="apartment" required placeholder="4 digits" pattern="[0-9]{4}" maxlength="4">
+                            <small class="form-hint">4-digit apartment number</small>
+                        </div>
+                        
+                        <!-- Bread Quantity Selection -->
+                        <div class="form-group">
+                            <label for="breadQuantity">Number of Loaves</label>
+                            <div class="quantity-selector">
+                                <button type="button" class="quantity-btn" data-quantity="0" data-type="bread">None</button>
+                                <button type="button" class="quantity-btn" data-quantity="1" data-type="bread">1 Loaf</button>
+                                <button type="button" class="quantity-btn" data-quantity="2" data-type="bread">2 Loaves</button>
+                                <button type="button" class="quantity-btn" data-quantity="3" data-type="bread">3 Loaves</button>
+                            </div>
+                            <input type="hidden" id="breadQuantity" name="breadQuantity" value="0" required>
+                        </div>
+                        
+                        <!-- Jam Selection -->
+                        <div class="form-group">
+                            <label for="jamQuantity">Jam of the Week <span class="supplies-tag">While Supplies Last</span></label>
+                            <div class="quantity-selector">
+                                <button type="button" class="quantity-btn jam-btn" data-quantity="0" data-type="jam">None</button>
+                                <button type="button" class="quantity-btn jam-btn" data-quantity="1" data-type="jam">1 Jar</button>
+                                <button type="button" class="quantity-btn jam-btn" data-quantity="2" data-type="jam">2 Jars</button>
+                                <button type="button" class="quantity-btn jam-btn" data-quantity="3" data-type="jam">3 Jars</button>
+                            </div>
+                            <input type="hidden" id="jamQuantity" name="jamQuantity" value="0" required>
+                        </div>
+                        
+                        <!-- Delivery Date -->
+                        <div class="form-group">
+                            <label for="deliveryDate">Delivery Date</label>
+                            <input type="date" id="deliveryDate" name="deliveryDate" required>
+                            <small class="form-hint">Orders must be placed at least 48 hours in advance</small>
+                        </div>
+                        
+                        <!-- Notes for Baker -->
+                        <div class="form-group">
+                            <label for="notes">Notes for the Baker</label>
+                            <textarea id="notes" name="notes" rows="4" placeholder="Optional: Let me know if you have any special requests..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">Place Order</button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Order Confirmation (hidden by default) -->
+            <div id="orderConfirmation" class="order-confirmation hidden">
+                <div class="confirmation-content">
+                    <h2>Order Confirmed!</h2>
+                    <p>Thank you for your order. We'll see you soon!</p>
+                    <a href="index.html" class="cta-button">Back to Home</a>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2024 upper crust. Made with care, delivered with love.</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

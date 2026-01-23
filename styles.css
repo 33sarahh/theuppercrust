@@ -1,0 +1,728 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --cream: #f5f1e8;
+    --warm-beige: #e8e0d3;
+    --rustic-brown: #8b7355;
+    --dark-brown: #5c4a37;
+    --golden: #d4a574;
+    --text-dark: #2c2416;
+    --text-light: #6b5d4a;
+}
+
+body {
+    font-family: 'Cormorant Garamond', serif;
+    background-color: var(--cream);
+    color: var(--text-dark);
+    line-height: 1.6;
+    font-size: 18px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Site Header */
+.site-header {
+    text-align: center;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--warm-beige);
+    margin-bottom: 3rem;
+}
+
+.business-name {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-transform: lowercase;
+    letter-spacing: 2px;
+}
+
+/* Typography */
+.main-heading {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.section-heading {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Hero Section - Full Width Image */
+.hero-section {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 4rem;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+}
+
+.hero-image-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-button-overlay {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.hero-button-overlay .cta-button {
+    pointer-events: all;
+}
+
+.hero-image,
+.jam-image,
+.chef-image {
+    width: 100%;
+    filter: grayscale(8%) contrast(1.08) brightness(0.97) saturate(1.1);
+    position: relative;
+    display: block;
+}
+
+.jam-image,
+.chef-image {
+    object-fit: cover;
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Film grain effect using CSS */
+.grain-overlay {
+    position: relative;
+}
+
+.grain-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.03) 0px,
+            transparent 1px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 3px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.03) 0px,
+            transparent 1px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 3px
+        );
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    z-index: 1;
+}
+
+.mission-statement {
+    font-size: 1.3rem;
+    color: var(--text-light);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+    font-weight: 300;
+    text-align: left;
+}
+
+/* CTA Button */
+.cta-button {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background-color: var(--rustic-brown);
+    color: white;
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+    align-self: flex-start;
+}
+
+.cta-button.hero-cta {
+    background-color: #DBCE80;
+    color: white;
+    box-shadow: 0 4px 15px rgba(219, 206, 128, 0.4);
+}
+
+.cta-button.hero-cta:hover {
+    background-color: #c9bb6d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(219, 206, 128, 0.5);
+}
+
+.cta-button:hover {
+    background-color: var(--dark-brown);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
+}
+
+/* Jam Section - Layered Images */
+.jam-section {
+    padding: 4rem 0;
+    text-align: center;
+    background-color: var(--warm-beige);
+    margin: 2rem 0;
+    border-radius: 8px;
+}
+
+.jam-images-wrapper {
+    margin-bottom: 3rem;
+    position: relative;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.jam-image {
+    position: absolute;
+    width: 80%;
+    max-width: 600px;
+    height: 500px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.jam-image-02 {
+    z-index: 1;
+    transform: rotate(-2deg) translateX(-20px);
+    filter: grayscale(8%) contrast(1.08) brightness(0.95) saturate(1.1);
+}
+
+.jam-image-01 {
+    z-index: 2;
+    transform: rotate(2deg) translateX(20px);
+    filter: grayscale(8%) contrast(1.08) brightness(0.97) saturate(1.1);
+}
+
+.jam-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.jam-blurb {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+    font-weight: 300;
+}
+
+/* Chef Section */
+.chef-section {
+    padding: 4rem 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.chef-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    aspect-ratio: 1 / 1;
+}
+
+.chef-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chef-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chef-blurb {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    line-height: 1.9;
+    font-weight: 300;
+    text-align: left;
+}
+
+.chef-section .section-heading {
+    text-align: left;
+}
+
+/* Header Styles */
+header {
+    padding: 2rem 0;
+    text-align: center;
+    border-bottom: 1px solid var(--warm-beige);
+    margin-bottom: 2rem;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+
+.logo {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0;
+}
+
+.logo-link:hover .logo {
+    color: var(--rustic-brown);
+    transition: color 0.3s ease;
+}
+
+/* Order Page - Main Layout */
+.order-main {
+    min-height: calc(100vh - 200px);
+    padding-bottom: 3rem;
+}
+
+.order-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Order Image Wrapper (Left Column) */
+.order-image-wrapper {
+    position: relative;
+    background-color: var(--cream);
+    padding: 2rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+}
+
+.order-image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    max-height: 80vh;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.film-grain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.3;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.03) 0px,
+            transparent 1px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 3px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.03) 0px,
+            transparent 1px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 3px
+        );
+    mix-blend-mode: overlay;
+    border-radius: 8px;
+}
+
+/* Order Form Container (Right Column) */
+.order-form-container {
+    background-color: var(--warm-beige);
+    padding: 3rem;
+    border-radius: 8px;
+}
+
+.order-title {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+/* Legacy support for old class names */
+.order-page-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    background-color: white;
+}
+
+.order-page-left {
+    background-color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.order-bread-image {
+    width: 100%;
+    max-width: 600px;
+    height: 80vh;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.order-page-right {
+    background-color: var(--warm-beige);
+    padding: 3rem;
+    overflow-y: auto;
+}
+
+.order-page-heading {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.order-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin-bottom: 2.5rem;
+}
+
+.order-form {
+    background-color: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    font-family: 'Playfair Display', serif;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    border: 2px solid var(--warm-beige);
+    border-radius: 4px;
+    background-color: white;
+    color: var(--text-dark);
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--rustic-brown);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Quantity Buttons */
+.quantity-buttons,
+.quantity-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.quantity-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: white;
+    border: 2px solid var(--warm-beige);
+    border-radius: 4px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 400;
+    width: 100%;
+}
+
+.quantity-btn:hover {
+    border-color: var(--rustic-brown);
+    background-color: var(--cream);
+}
+
+.quantity-btn.active {
+    background-color: var(--rustic-brown);
+    color: white;
+    border-color: var(--rustic-brown);
+}
+
+.supplies-tag {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--rustic-brown);
+    color: white;
+    font-size: 0.85rem;
+    border-radius: 3px;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.form-submit {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1rem 3rem;
+    background-color: var(--rustic-brown);
+    color: white;
+    border: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
+}
+
+.submit-button:hover {
+    background-color: var(--dark-brown);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* Order Confirmation */
+.order-confirmation {
+    padding: 3rem;
+    background-color: white;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.order-confirmation.hidden {
+    display: none;
+}
+
+.confirmation-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.order-confirmation h2 {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+.order-confirmation p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid var(--warm-beige);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+
+    .chef-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .chef-section .section-heading {
+        text-align: center;
+    }
+
+    .order-section {
+        grid-template-columns: 1fr;
+    }
+
+    .order-image-wrapper {
+        display: none;
+    }
+
+    .order-page-container {
+        grid-template-columns: 1fr;
+    }
+
+    .order-page-left {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .business-name {
+        font-size: 2rem;
+    }
+
+    .main-heading {
+        font-size: 2.5rem;
+    }
+
+    .section-heading {
+        font-size: 2rem;
+    }
+
+    .hero-button-overlay {
+        bottom: 2rem;
+    }
+    
+    .hero-button-overlay .cta-button {
+        font-size: 1rem;
+        padding: 0.875rem 2rem;
+    }
+    
+    .chef-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .chef-image-wrapper {
+        aspect-ratio: 1 / 1;
+    }
+    
+    .chef-section .section-heading {
+        text-align: center;
+    }
+
+    .jam-image {
+        height: 400px;
+    }
+
+    .jam-images-wrapper {
+        height: 400px;
+    }
+
+    .mission-statement,
+    .jam-blurb,
+    .chef-blurb {
+        font-size: 1.1rem;
+    }
+
+    .order-page-right {
+        padding: 1.5rem;
+    }
+
+    .order-page-heading {
+        font-size: 2rem;
+    }
+
+    .quantity-buttons,
+    .quantity-selector {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
