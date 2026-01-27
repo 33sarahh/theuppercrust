@@ -32,21 +32,20 @@ function Home() {
           )}
         </div>
       </header>
-      <div className="container">
-        {/* Bread Section */}
-        <section className="hero-section">
-          <div className="hero-image-wrapper">
-            <img 
-              src={getImagePath('With font.jpg')}
-              alt="Fresh round ciabatta bread" 
-              className="hero-image grain-overlay" 
-            />
-            <div className="hero-button-overlay">
-              <Link to="/register" className="cta-button hero-cta">knead a loaf?</Link>
-            </div>
+      {/* Bread Section */}
+      <section className="hero-section">
+        <div className="hero-image-wrapper">
+          <img 
+            src={getImagePath('3_posters.jpg')}
+            alt="Fresh round ciabatta bread" 
+            className="hero-image grain-overlay" 
+          />
+          <div className="hero-button-overlay">
+            <Link to="/register" className="cta-button hero-cta">knead a loaf?</Link>
           </div>
-        </section>
-
+        </div>
+      </section>
+      <div className="container">
         {/* Jam Section */}
         <section className="jam-section">
           <div className="jam-images-wrapper">
