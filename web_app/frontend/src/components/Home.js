@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // Helper function to get image path
 const getImagePath = (filename) => {
@@ -7,6 +8,8 @@ const getImagePath = (filename) => {
 };
 
 function Home() {
+  const { user } = useAuth();
+
   useEffect(() => {
     document.title = 'the upper crust - Breaking bread, not your schedule';
   }, []);
@@ -15,6 +18,16 @@ function Home() {
     <>
       <header className="site-header">
         <h1 className="business-name">the upper crust</h1>
+        <div className="header-auth">
+          {user ? (
+            <Link to="/dashboard" className="auth-link">My Account</Link>
+          ) : (
+            <>
+              <Link to="/login" className="auth-link">Log In</Link>
+              <Link to="/register" className="auth-link register-link">Sign Up</Link>
+            </>
+          )}
+        </div>
       </header>
       <div className="container">
         {/* Bread Section */}
@@ -26,7 +39,7 @@ function Home() {
               className="hero-image grain-overlay" 
             />
             <div className="hero-button-overlay">
-              <Link to="/order" className="cta-button hero-cta">knead a loaf?</Link>
+              <Link to={user ? "/order" : "/register"} className="cta-button hero-cta">knead a loaf?</Link>
             </div>
           </div>
         </section>
@@ -50,7 +63,7 @@ function Home() {
             <p className="jam-blurb">
               I make jams too! Every week, I make a different fresh batch using simple ingredients and old-fashioned methods. Only available while supplies last! Made to be spread on good bread.
             </p>
-            <Link to="/order" className="cta-button">let's get jamming</Link>
+            <Link to={user ? "/order" : "/register"} className="cta-button">let's get jamming</Link>
           </div>
         </section>
 

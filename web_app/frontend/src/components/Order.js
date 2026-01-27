@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // Helper function to get image path
 const getImagePath = (filename) => {
@@ -7,10 +8,10 @@ const getImagePath = (filename) => {
 };
 
 function Order() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    apartment: '',
     breadQuantity: 0,
     jamQuantity: 0,
     deliveryDate: '',
@@ -25,6 +26,23 @@ function Order() {
     // Set page title
     document.title = 'Place Your Order | the upper crust';
     
+    // Redirect to login if not authenticated
+    if (!authLoading && !user) {
+      navigate('/login', { state: { from: { pathname: '/order' } } });
+      return;
+    }
+
+    // Handle prefilled data from reorder
+    if (location.state?.prefill) {
+      const prefill = location.state.prefill;
+      setFormData(prev => ({
+        ...prev,
+        breadQuantity: prefill.breadQuantity || 0,
+        jamQuantity: prefill.jamQuantity || 0,
+        notes: prefill.notes || ''
+      }));
+    }
+    
     // Calculate minimum date (48 hours from now)
     const now = new Date();
     const minDateObj = new Date(now.getTime() + (48 * 60 * 60 * 1000));
@@ -32,7 +50,7 @@ function Order() {
     const month = String(minDateObj.getMonth() + 1).padStart(2, '0');
     const day = String(minDateObj.getDate()).padStart(2, '0');
     setMinDate(`${year}-${month}-${day}`);
-  }, []);
+  }, [user, authLoading, navigate, location]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,31 +59,6 @@ function Order() {
       [name]: value
     }));
     setError('');
-  };
-
-  const handlePhoneInput = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 0) {
-      if (value.length <= 3) {
-        value = `(${value}`;
-      } else if (value.length <= 6) {
-        value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
-      } else {
-        value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
-      }
-    }
-    setFormData(prev => ({
-      ...prev,
-      phone: value
-    }));
-  };
-
-  const handleApartmentInput = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-    setFormData(prev => ({
-      ...prev,
-      apartment: value
-    }));
   };
 
   const handleQuantityClick = (quantity, type) => {
@@ -100,6 +93,7 @@ function Order() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -119,6 +113,18 @@ function Order() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="container">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
+  }
+
   if (submitted) {
     return (
       <div className="container">
@@ -128,13 +134,16 @@ function Order() {
           </Link>
         </header>
         <main className="order-main">
-          <div className="order-confirmation">
-            <div className="confirmation-content">
-              <h2>Order Confirmed!</h2>
-              <p>Thank you for your order. We'll see you soon!</p>
-              <Link to="/" className="cta-button">Back to Home</Link>
+            <div className="order-confirmation">
+              <div className="confirmation-content">
+                <h2>Order Confirmed!</h2>
+                <p>Thank you for your order. We'll see you soon!</p>
+                <div className="confirmation-actions">
+                  <Link to="/dashboard" className="cta-button">View My Orders</Link>
+                  <Link to="/" className="cta-button secondary">Back to Home</Link>
+                </div>
+              </div>
             </div>
-          </div>
         </main>
         <footer>
           <p>© 2024 the upper crust. Made with care, delivered with love.</p>
@@ -167,52 +176,11 @@ function Order() {
           <div className="order-form-container">
             <h2 className="order-title">Place Your Order</h2>
             <p className="order-subtitle">Fresh ciabatta, made to order and delivered to your door</p>
+            <p className="order-user-info">Ordering as: {user.firstName} {user.lastName} (Apt {user.apartment})</p>
             
             {error && <div className="error-message">{error}</div>}
             
             <form onSubmit={handleSubmit} className="order-form">
-              {/* Customer Information */}
-              <div className="form-group">
-                <label htmlFor="name">Your Name</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  name="name" 
-                  required 
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="phone">Phone Number</label>
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  name="phone" 
-                  required 
-                  placeholder="(555) 123-4567"
-                  value={formData.phone}
-                  onChange={handlePhoneInput}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="apartment">Apartment Number</label>
-                <input 
-                  type="text" 
-                  id="apartment" 
-                  name="apartment" 
-                  required 
-                  placeholder="4 digits" 
-                  pattern="[0-9]{4}" 
-                  maxLength="4"
-                  value={formData.apartment}
-                  onChange={handleApartmentInput}
-                />
-                <small className="form-hint">4-digit apartment number</small>
-              </div>
               
               {/* Bread Quantity Selection */}
               <div className="form-group">
