@@ -22,6 +22,9 @@ function Order() {
   const [minDate, setMinDate] = useState('');
 
   useEffect(() => {
+    // Set page title
+    document.title = 'Place Your Order | the upper crust';
+    
     // Calculate minimum date (48 hours from now)
     const now = new Date();
     const minDateObj = new Date(now.getTime() + (48 * 60 * 60 * 1000));
@@ -121,7 +124,7 @@ function Order() {
       <div className="container">
         <header>
           <Link to="/" className="logo-link">
-            <h1 className="logo">upper crust</h1>
+            <h1 className="logo">the upper crust</h1>
           </Link>
         </header>
         <main className="order-main">
@@ -134,7 +137,7 @@ function Order() {
           </div>
         </main>
         <footer>
-          <p>© 2024 upper crust. Made with care, delivered with love.</p>
+          <p>© 2024 the upper crust. Made with care, delivered with love.</p>
         </footer>
       </div>
     );
@@ -144,7 +147,7 @@ function Order() {
     <div className="container">
       <header>
         <Link to="/" className="logo-link">
-          <h1 className="logo">upper crust</h1>
+          <h1 className="logo">the upper crust</h1>
         </Link>
       </header>
       
@@ -338,7 +341,7 @@ function Order() {
       </main>
       
       <footer>
-        <p>© 2024 upper crust. Made with care, delivered with love.</p>
+        <p>© 2024 the upper crust. Made with care, delivered with love.</p>
       </footer>
     </div>
   );

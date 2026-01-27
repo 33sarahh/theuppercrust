@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 // Helper function to get image path
@@ -7,10 +7,14 @@ const getImagePath = (filename) => {
 };
 
 function Home() {
+  useEffect(() => {
+    document.title = 'the upper crust - Breaking bread, not your schedule';
+  }, []);
+
   return (
     <>
       <header className="site-header">
-        <h1 className="business-name">upper crust</h1>
+        <h1 className="business-name">the upper crust</h1>
       </header>
       <div className="container">
         {/* Bread Section */}
