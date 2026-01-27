@@ -20,12 +20,15 @@ function Home() {
         <h1 className="business-name">the upper crust</h1>
         <div className="header-auth">
           {user ? (
-            <Link to="/dashboard" className="auth-link">My Account</Link>
+            <Link to="/dashboard" className="profile-link">
+              <img 
+                src={getImagePath('profile_bread.jpg')} 
+                alt="Profile" 
+                className="header-avatar"
+              />
+            </Link>
           ) : (
-            <>
-              <Link to="/login" className="auth-link">Log In</Link>
-              <Link to="/register" className="auth-link register-link">Sign Up</Link>
-            </>
+            <Link to="/login" className="auth-link">Sign In</Link>
           )}
         </div>
       </header>
@@ -39,7 +42,7 @@ function Home() {
               className="hero-image grain-overlay" 
             />
             <div className="hero-button-overlay">
-              <Link to={user ? "/order" : "/register"} className="cta-button hero-cta">knead a loaf?</Link>
+              <Link to="/register" className="cta-button hero-cta">knead a loaf?</Link>
             </div>
           </div>
         </section>
@@ -63,7 +66,7 @@ function Home() {
             <p className="jam-blurb">
               I make jams too! Every week, I make a different fresh batch using simple ingredients and old-fashioned methods. Only available while supplies last! Made to be spread on good bread.
             </p>
-            <Link to={user ? "/order" : "/register"} className="cta-button">let's get jamming</Link>
+            <Link to="/register" className="cta-button">let's get jamming</Link>
           </div>
         </section>
 

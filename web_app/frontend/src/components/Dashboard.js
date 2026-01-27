@@ -13,7 +13,7 @@ function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'review'
+  const [activeTab, setActiveTab] = useState('orders');
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
@@ -59,7 +59,6 @@ function Dashboard() {
   };
 
   const handleReorder = (order) => {
-    // Navigate to order page with pre-filled data
     navigate('/order', {
       state: {
         prefill: {
@@ -206,6 +205,12 @@ function Dashboard() {
                         <span className="item-label">Delivery Date:</span>
                         <span className="item-value">{formatDate(order.deliveryDate)}</span>
                       </div>
+                      {order.isRecurring && (
+                        <div className="order-item">
+                          <span className="item-label">Recurring:</span>
+                          <span className="item-value">Weekly</span>
+                        </div>
+                      )}
                       {order.notes && (
                         <div className="order-item">
                           <span className="item-label">Notes:</span>

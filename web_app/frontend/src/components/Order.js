@@ -15,7 +15,8 @@ function Order() {
     breadQuantity: 0,
     jamQuantity: 0,
     deliveryDate: '',
-    notes: ''
+    notes: '',
+    isRecurring: false
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -53,10 +54,10 @@ function Order() {
   }, [user, authLoading, navigate, location]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
     setError('');
   };
@@ -134,16 +135,16 @@ function Order() {
           </Link>
         </header>
         <main className="order-main">
-            <div className="order-confirmation">
-              <div className="confirmation-content">
-                <h2>Order Confirmed!</h2>
-                <p>Thank you for your order. We'll see you soon!</p>
-                <div className="confirmation-actions">
-                  <Link to="/dashboard" className="cta-button">View My Orders</Link>
-                  <Link to="/" className="cta-button secondary">Back to Home</Link>
-                </div>
+          <div className="order-confirmation">
+            <div className="confirmation-content">
+              <h2>Order Confirmed!</h2>
+              <p>Thank you for your order. We'll see you soon!</p>
+              <div className="confirmation-actions">
+                <Link to="/dashboard" className="cta-button">View My Orders</Link>
+                <Link to="/" className="cta-button secondary">Back to Home</Link>
               </div>
             </div>
+          </div>
         </main>
         <footer>
           <p>© 2024 the upper crust. Made with care, delivered with love.</p>
@@ -296,6 +297,21 @@ function Order() {
                 ></textarea>
               </div>
               
+              {/* Recurring Order Option */}
+              <div className="form-group">
+                <label className="recurring-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="isRecurring"
+                    checked={formData.isRecurring}
+                    onChange={handleInputChange}
+                    className="recurring-checkbox"
+                  />
+                  <span>Make this a weekly recurring order</span>
+                </label>
+                <small className="form-hint">Your order will automatically repeat every week</small>
+              </div>
+
               <button 
                 type="submit" 
                 className="submit-button"

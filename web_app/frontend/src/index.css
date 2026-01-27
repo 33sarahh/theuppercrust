@@ -21,6 +21,8 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
     font-size: 18px;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
@@ -35,7 +37,6 @@ body {
     padding: 2rem 0;
     border-bottom: 1px solid var(--warm-beige);
     margin-bottom: 3rem;
-    position: relative;
 }
 
 .business-name {
@@ -46,40 +47,6 @@ body {
     color: var(--text-dark);
     text-transform: lowercase;
     letter-spacing: 2px;
-}
-
-.header-auth {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.auth-link {
-    color: var(--rustic-brown);
-    text-decoration: none;
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--rustic-brown);
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.auth-link:hover {
-    background-color: var(--rustic-brown);
-    color: white;
-}
-
-.auth-link.register-link {
-    background-color: var(--rustic-brown);
-    color: white;
-}
-
-.auth-link.register-link:hover {
-    background-color: var(--dark-brown);
 }
 
 /* Typography */
@@ -104,13 +71,14 @@ body {
     text-align: center;
 }
 
-/* Hero Section - Full Width Image */
+/* Hero Section - Full Viewport Edge-to-Edge */
 .hero-section {
     padding: 0;
     margin: 0;
     margin-bottom: 4rem;
     position: relative;
     width: 100vw;
+    height: 100vh;
     left: 50%;
     right: 50%;
     margin-left: -50vw;
@@ -121,6 +89,7 @@ body {
 .hero-image-wrapper {
     position: relative;
     width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,9 +97,9 @@ body {
 
 .hero-button-overlay {
     position: absolute;
-    bottom: 3rem;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 10;
     pointer-events: none;
 }
@@ -155,8 +124,8 @@ body {
 
 .hero-image {
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
     display: block;
 }
 
@@ -443,6 +412,46 @@ header {
     margin-bottom: 0.5rem;
 }
 
+/* Legacy support for old class names */
+.order-page-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    background-color: white;
+}
+
+.order-page-left {
+    background-color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.order-bread-image {
+    width: 100%;
+    max-width: 600px;
+    height: 80vh;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.order-page-right {
+    background-color: var(--warm-beige);
+    padding: 3rem;
+    overflow-y: auto;
+}
+
+.order-page-heading {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
 .order-subtitle {
     font-size: 1.1rem;
     color: var(--text-light);
@@ -454,6 +463,16 @@ header {
     background-color: transparent;
     padding: 0;
     box-shadow: none;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
 }
 
 .form-group {
@@ -502,6 +521,7 @@ header {
 }
 
 /* Quantity Buttons */
+.quantity-buttons,
 .quantity-selector {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -543,6 +563,11 @@ header {
     border-radius: 3px;
     font-weight: 400;
     font-style: normal;
+}
+
+.form-submit {
+    text-align: center;
+    margin-top: 2rem;
 }
 
 .submit-button {
@@ -624,11 +649,17 @@ footer {
     color: #d32f2f;
     font-size: 0.9rem;
     margin-top: 0.5rem;
+    margin-bottom: 1rem;
     font-style: italic;
+    padding: 0.75rem;
+    background-color: #ffebee;
+    border: 1px solid #d32f2f;
+    border-radius: 4px;
 }
 
 /* Responsive Design */
 @media (max-width: 968px) {
+
     .chef-section {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -643,6 +674,14 @@ footer {
     }
 
     .order-image-wrapper {
+        display: none;
+    }
+
+    .order-page-container {
+        grid-template-columns: 1fr;
+    }
+
+    .order-page-left {
         display: none;
     }
 }
@@ -660,8 +699,14 @@ footer {
         font-size: 2rem;
     }
 
+    .hero-section {
+        height: 100vh;
+    }
+    
     .hero-button-overlay {
-        bottom: 2rem;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
     
     .hero-button-overlay .cta-button {
@@ -696,14 +741,15 @@ footer {
         font-size: 1.1rem;
     }
 
-    .order-form-container {
+    .order-page-right {
         padding: 1.5rem;
     }
 
-    .order-title {
+    .order-page-heading {
         font-size: 2rem;
     }
 
+    .quantity-buttons,
     .quantity-selector {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -775,6 +821,50 @@ footer {
 
 .auth-footer a:hover {
     text-decoration: underline;
+}
+
+/* ========== Header Avatar ========== */
+.header-auth {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--rustic-brown);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.header-avatar:hover {
+    transform: scale(1.1);
+}
+
+.profile-link {
+    display: inline-block;
+}
+
+.auth-link {
+    color: var(--rustic-brown);
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--rustic-brown);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.auth-link:hover {
+    background-color: var(--rustic-brown);
+    color: white;
 }
 
 /* ========== Dashboard Styles ========== */
@@ -1131,6 +1221,330 @@ footer {
     color: var(--text-light);
 }
 
+/* ========== Recurring Order Checkbox ========== */
+.recurring-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-family: 'Playfair Display', serif;
+}
+
+.recurring-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* ========== Admin Styles ========== */
+.admin-main {
+    min-height: calc(100vh - 200px);
+    padding: 2rem 0;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--warm-beige);
+}
+
+.calendar-view h2,
+.users-view h2 {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.calendar-day {
+    background-color: var(--warm-beige);
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.calendar-day:hover {
+    border-color: var(--rustic-brown);
+    transform: translateY(-2px);
+}
+
+.calendar-day.today {
+    border-color: var(--rustic-brown);
+    background-color: #fff3cd;
+}
+
+.calendar-day.past {
+    opacity: 0.6;
+}
+
+.calendar-day.has-orders {
+    border-color: var(--golden);
+}
+
+.calendar-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-date {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.calendar-day-name {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+}
+
+.calendar-orders {
+    margin-top: 0.5rem;
+}
+
+.calendar-order-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-order-item:hover {
+    background-color: var(--cream);
+}
+
+.calendar-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--rustic-brown);
+}
+
+.calendar-order-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    flex: 1;
+}
+
+.calendar-order-items {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.calendar-more {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+.selected-date-orders {
+    background-color: var(--warm-beige);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.selected-date-orders h3 {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2rem;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.date-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.date-order-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.date-order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.date-order-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.date-order-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--rustic-brown);
+}
+
+.date-order-header h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.date-order-header p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.date-order-details p {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.order-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.order-detail-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--text-light);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: var(--text-dark);
+}
+
+.order-detail-content h2 {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 2rem;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.order-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detail-section {
+    padding: 1rem;
+    background-color: var(--warm-beige);
+    border-radius: 4px;
+}
+
+.detail-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 0.75rem;
+}
+
+.detail-section p {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.users-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.user-card {
+    background-color: var(--warm-beige);
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-card-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--rustic-brown);
+}
+
+.user-card-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.user-card-header p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.user-orders-count {
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
 /* Responsive adjustments for new components */
 @media (max-width: 768px) {
     .auth-container {
@@ -1146,7 +1560,8 @@ footer {
         text-align: center;
     }
 
-    .dashboard-tabs {
+    .dashboard-tabs,
+    .admin-tabs {
         flex-direction: column;
         gap: 0;
     }
@@ -1161,11 +1576,18 @@ footer {
         border-bottom-color: var(--rustic-brown);
     }
 
-    .form-actions {
+    .form-actions,
+    .confirmation-actions {
         flex-direction: column;
     }
 
-    .confirmation-actions {
-        flex-direction: column;
+    .calendar-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .header-auth {
+        position: static;
+        margin-top: 1rem;
+        justify-content: center;
     }
 }

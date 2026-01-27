@@ -22,7 +22,6 @@ function Register() {
       ...prev,
       [name]: value
     }));
-    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -119,7 +118,7 @@ function Register() {
       
       <main className="auth-main">
         <div className="auth-container">
-          <h2 className="auth-title">Create Account</h2>
+          <h2 className="auth-title">Create Your Profile</h2>
           <p className="auth-subtitle">Join the upper crust community</p>
           
           {error && <div className="error-message">{error}</div>}
@@ -201,12 +200,12 @@ function Register() {
             </div>
 
             <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating Profile...' : 'Create Profile'}
             </button>
           </form>
 
           <p className="auth-footer">
-            Already have an account? <Link to="/login">Log in</Link>
+            Already have an account? <Link to="/login">Sign in</Link>
           </p>
         </div>
       </main>

@@ -14,7 +14,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true in production with HTTPS
+        secure: false,
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
@@ -63,7 +63,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             }
         });
         
-        // Create orders table with userId
+        // Create orders table with userId and recurring
         db.run(`CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             userId INTEGER,
@@ -76,16 +76,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
             notes TEXT,
             orderTime TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
+            isRecurring INTEGER DEFAULT 0,
+            recurringFrequency TEXT,
             FOREIGN KEY (userId) REFERENCES users(id)
         )`, (err) => {
             if (err) {
                 console.error('Error creating orders table:', err.message);
             } else {
                 console.log('Orders table ready');
-                // Migrate existing orders: add userId column if it doesn't exist
-                db.run(`ALTER TABLE orders ADD COLUMN userId INTEGER`, (err) => {
-                    // Ignore error if column already exists
-                });
             }
         });
         
@@ -107,8 +105,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// API Routes
-
 // ========== Authentication Routes ==========
 
 // Register new user
@@ -129,11 +125,6 @@ app.post('/api/auth/register', (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
-    }
-    
-    // Validate phone (basic format check)
-    if (phone.replace(/\D/g, '').length < 10) {
-        return res.status(400).json({ error: 'Invalid phone number' });
     }
     
     const createdAt = new Date().toISOString();
@@ -161,7 +152,7 @@ app.post('/api/auth/register', (req, res) => {
                 // Set session
                 req.session.userId = this.lastID;
                 
-                // Return user data (without sensitive info)
+                // Return user data
                 res.status(201).json({
                     id: this.lastID,
                     firstName,
@@ -184,7 +175,6 @@ app.post('/api/auth/login', (req, res) => {
         return res.status(400).json({ error: 'Email and apartment number are required' });
     }
     
-    // Find user by email and apartment
     db.get(
         'SELECT * FROM users WHERE email = ? AND apartment = ?',
         [email, apartment],
@@ -196,10 +186,8 @@ app.post('/api/auth/login', (req, res) => {
                 return res.status(401).json({ error: 'Invalid email or apartment number' });
             }
             
-            // Set session
             req.session.userId = user.id;
             
-            // Return user data (without sensitive info)
             res.json({
                 id: user.id,
                 firstName: user.firstName,
@@ -224,7 +212,11 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // Get current user
-app.get('/api/auth/me', requireAuth, (req, res) => {
+app.get('/api/auth/me', (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
     const userId = req.session.userId;
     
     db.get('SELECT id, firstName, lastName, apartment, email, phone, avatar FROM users WHERE id = ?', [userId], (err, user) => {
@@ -238,68 +230,77 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
     });
 });
 
-// ========== User Profile Routes ==========
+// ========== Orders Routes ==========
 
-// Get user profile
-app.get('/api/users/profile', requireAuth, (req, res) => {
+// Get all orders for authenticated user
+app.get('/api/orders', requireAuth, (req, res) => {
     const userId = req.session.userId;
     
-    db.get('SELECT id, firstName, lastName, apartment, email, phone, avatar FROM users WHERE id = ?', [userId], (err, user) => {
+    db.all(
+        'SELECT * FROM orders WHERE userId = ? ORDER BY orderTime DESC',
+        [userId],
+        (err, rows) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json(rows);
+        }
+    );
+});
+
+// Create a new order
+app.post('/api/orders', requireAuth, (req, res) => {
+    const userId = req.session.userId;
+    const { breadQuantity, jamQuantity, deliveryDate, notes, isRecurring } = req.body;
+    
+    db.get('SELECT firstName, lastName, phone, apartment FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
-        }
-        res.json(user);
-    });
-});
-
-// Update user profile
-app.put('/api/users/profile', requireAuth, (req, res) => {
-    const userId = req.session.userId;
-    const { firstName, lastName, apartment, email, phone } = req.body;
-    
-    // Validation
-    if (!firstName || !lastName || !apartment || !email || !phone) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-    
-    // Validate apartment (exactly 4 digits)
-    if (!/^\d{4}$/.test(apartment)) {
-        return res.status(400).json({ error: 'Apartment number must be exactly 4 digits' });
-    }
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-    
-    // Check if email is taken by another user
-    db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (row) {
-            return res.status(400).json({ error: 'Email already taken' });
         }
         
-        // Update user
+        if (!deliveryDate) {
+            return res.status(400).json({ error: 'Delivery date is required' });
+        }
+        
+        const breadQty = parseInt(breadQuantity) || 0;
+        const jamQty = parseInt(jamQuantity) || 0;
+        
+        if (breadQty === 0 && jamQty === 0) {
+            return res.status(400).json({ error: 'Please select at least one item to order' });
+        }
+        
+        const orderTime = new Date().toISOString();
+        const name = `${user.firstName} ${user.lastName}`;
+        const recurring = isRecurring ? 1 : 0;
+        const recurringFreq = isRecurring ? 'weekly' : null;
+        
         db.run(
-            `UPDATE users SET firstName = ?, lastName = ?, apartment = ?, email = ?, phone = ? WHERE id = ?`,
-            [firstName, lastName, apartment, email, phone, userId],
+            `INSERT INTO orders (userId, name, phone, apartment, breadQuantity, jamQuantity, deliveryDate, notes, orderTime, status, isRecurring, recurringFrequency)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, name, user.phone, user.apartment, breadQty, jamQty, deliveryDate, notes || '', orderTime, 'pending', recurring, recurringFreq],
             function(err) {
                 if (err) {
-                    return res.status(500).json({ error: err.message });
+                    res.status(500).json({ error: err.message });
+                    return;
                 }
-                
-                // Return updated user
-                db.get('SELECT id, firstName, lastName, apartment, email, phone, avatar FROM users WHERE id = ?', [userId], (err, user) => {
-                    if (err) {
-                        return res.status(500).json({ error: err.message });
-                    }
-                    res.json(user);
+                res.status(201).json({
+                    id: this.lastID,
+                    userId,
+                    name,
+                    phone: user.phone,
+                    apartment: user.apartment,
+                    breadQuantity: breadQty,
+                    jamQuantity: jamQty,
+                    deliveryDate,
+                    notes: notes || '',
+                    orderTime,
+                    status: 'pending',
+                    isRecurring: recurring,
+                    recurringFrequency: recurringFreq
                 });
             }
         );
@@ -313,7 +314,6 @@ app.post('/api/reviews', requireAuth, (req, res) => {
     const userId = req.session.userId;
     const { rating, text } = req.body;
     
-    // Validation
     if (!rating || rating < 1 || rating > 5) {
         return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
@@ -354,129 +354,93 @@ app.get('/api/reviews/my', requireAuth, (req, res) => {
     );
 });
 
-// ========== Orders Routes ==========
+// ========== Admin Routes ==========
 
-// Get all orders (for authenticated user, only their orders)
-app.get('/api/orders', requireAuth, (req, res) => {
-    const userId = req.session.userId;
-    
+// Get all users (admin)
+app.get('/api/admin/users', (req, res) => {
+    db.all('SELECT id, firstName, lastName, apartment, email, phone, avatar, createdAt FROM users ORDER BY createdAt DESC', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// Get all orders (admin)
+app.get('/api/admin/orders', (req, res) => {
+    db.all('SELECT * FROM orders ORDER BY deliveryDate ASC, orderTime DESC', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// Get calendar data (orders grouped by delivery date)
+app.get('/api/admin/calendar', (req, res) => {
     db.all(
-        'SELECT * FROM orders WHERE userId = ? ORDER BY orderTime DESC',
-        [userId],
+        `SELECT 
+            deliveryDate,
+            COUNT(*) as orderCount,
+            GROUP_CONCAT(id) as orderIds
+         FROM orders 
+         WHERE status != 'cancelled'
+         GROUP BY deliveryDate
+         ORDER BY deliveryDate ASC`,
+        [],
         (err, rows) => {
             if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+                return res.status(500).json({ error: err.message });
             }
-            res.json(rows);
+            
+            // Get detailed orders for each date
+            const calendarData = {};
+            const promises = rows.map(row => {
+                return new Promise((resolve) => {
+                    db.all(
+                        `SELECT o.*, u.firstName, u.lastName, u.phone, u.email, u.apartment
+                         FROM orders o
+                         LEFT JOIN users u ON o.userId = u.id
+                         WHERE o.deliveryDate = ? AND o.status != 'cancelled'
+                         ORDER BY o.orderTime ASC`,
+                        [row.deliveryDate],
+                        (err, orders) => {
+                            if (!err) {
+                                calendarData[row.deliveryDate] = orders;
+                            }
+                            resolve();
+                        }
+                    );
+                });
+            });
+            
+            Promise.all(promises).then(() => {
+                res.json(calendarData);
+            });
         }
     );
 });
 
-// Get a single order by ID (must belong to user)
-app.get('/api/orders/:id', requireAuth, (req, res) => {
+// Get order details by ID
+app.get('/api/admin/orders/:id', (req, res) => {
     const id = req.params.id;
-    const userId = req.session.userId;
     
-    db.get('SELECT * FROM orders WHERE id = ? AND userId = ?', [id, userId], (err, row) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        if (!row) {
-            res.status(404).json({ error: 'Order not found' });
-            return;
-        }
-        res.json(row);
-    });
-});
-
-// Create a new order (requires authentication)
-app.post('/api/orders', requireAuth, (req, res) => {
-    const userId = req.session.userId;
-    const { breadQuantity, jamQuantity, deliveryDate, notes } = req.body;
-    
-    // Get user info to populate order
-    db.get('SELECT firstName, lastName, phone, apartment FROM users WHERE id = ?', [userId], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        // Validation
-        if (!deliveryDate) {
-            return res.status(400).json({ error: 'Delivery date is required' });
-        }
-        
-        const breadQty = parseInt(breadQuantity) || 0;
-        const jamQty = parseInt(jamQuantity) || 0;
-        
-        if (breadQty === 0 && jamQty === 0) {
-            return res.status(400).json({ error: 'Please select at least one item to order' });
-        }
-        
-        // Validate delivery date (must be at least 48 hours from now)
-        const selectedDate = new Date(deliveryDate);
-        const now = new Date();
-        const minDate = new Date(now.getTime() + (48 * 60 * 60 * 1000));
-        
-        if (selectedDate < minDate) {
-            return res.status(400).json({ error: 'Delivery date must be at least 48 hours from now' });
-        }
-        
-        const orderTime = new Date().toISOString();
-        const name = `${user.firstName} ${user.lastName}`;
-        
-        db.run(
-            `INSERT INTO orders (userId, name, phone, apartment, breadQuantity, jamQuantity, deliveryDate, notes, orderTime, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [userId, name, user.phone, user.apartment, breadQty, jamQty, deliveryDate, notes || '', orderTime, 'pending'],
-            function(err) {
-                if (err) {
-                    res.status(500).json({ error: err.message });
-                    return;
-                }
-                res.status(201).json({
-                    id: this.lastID,
-                    userId,
-                    name,
-                    phone: user.phone,
-                    apartment: user.apartment,
-                    breadQuantity: breadQty,
-                    jamQuantity: jamQty,
-                    deliveryDate,
-                    notes: notes || '',
-                    orderTime,
-                    status: 'pending'
-                });
+    db.get(
+        `SELECT o.*, u.firstName, u.lastName, u.phone, u.email, u.apartment, u.avatar
+         FROM orders o
+         LEFT JOIN users u ON o.userId = u.id
+         WHERE o.id = ?`,
+        [id],
+        (err, order) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
             }
-        );
-    });
-});
-
-// Update order status (admin only - keeping for backward compatibility)
-app.patch('/api/orders/:id', requireAuth, (req, res) => {
-    const id = req.params.id;
-    const userId = req.session.userId;
-    const { status } = req.body;
-    
-    if (!status) {
-        return res.status(400).json({ error: 'Status is required' });
-    }
-    
-    db.run('UPDATE orders SET status = ? WHERE id = ? AND userId = ?', [status, id, userId], function(err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            if (!order) {
+                return res.status(404).json({ error: 'Order not found' });
+            }
+            res.json(order);
         }
-        if (this.changes === 0) {
-            res.status(404).json({ error: 'Order not found' });
-            return;
-        }
-        res.json({ message: 'Order updated successfully' });
-    });
+    );
 });
 
 // Health check

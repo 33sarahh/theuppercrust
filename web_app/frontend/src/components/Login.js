@@ -14,7 +14,6 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Get redirect path from location state or default to dashboard
   const from = location.state?.from?.pathname || '/dashboard';
 
   const handleInputChange = (e) => {
@@ -88,7 +87,7 @@ function Login() {
       
       <main className="auth-main">
         <div className="auth-container">
-          <h2 className="auth-title">Log In</h2>
+          <h2 className="auth-title">Sign In</h2>
           <p className="auth-subtitle">Welcome back to the upper crust</p>
           
           {error && <div className="error-message">{error}</div>}
@@ -127,12 +126,12 @@ function Login() {
             </div>
 
             <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log In'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           <p className="auth-footer">
-            Don't have an account? <Link to="/register">Sign up</Link>
+            Don't have an account? <Link to="/register">Create one</Link>
           </p>
         </div>
       </main>

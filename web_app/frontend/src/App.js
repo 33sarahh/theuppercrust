@@ -6,6 +6,7 @@ import Order from './components/Order';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import Admin from './components/Admin';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,7 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route path="/admin" element={<Admin />} />
     </Routes>
   );
 }
@@ -55,3 +57,4 @@ function App() {
 }
 
 export default App;
+
