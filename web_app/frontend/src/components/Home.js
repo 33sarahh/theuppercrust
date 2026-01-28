@@ -46,29 +46,6 @@ function Home() {
         </div>
       </section>
       <div className="container">
-        {/* Jam Section */}
-        <section className="jam-section">
-          <div className="jam-images-wrapper">
-            <img 
-              src={getImagePath('jam 02.jpg')}
-              alt="Homemade jam in jars" 
-              className="jam-image jam-image-02 grain-overlay" 
-            />
-            <img 
-              src={getImagePath('jam01.jpg')}
-              alt="Homemade jam in jars" 
-              className="jam-image jam-image-01 grain-overlay" 
-            />
-          </div>
-          <div className="jam-content">
-            <h2 className="section-heading">spread the word</h2>
-            <p className="jam-blurb">
-              I make jams too! Every week, I make a different fresh batch using simple ingredients and old-fashioned methods. Only available while supplies last! Made to be spread on good bread.
-            </p>
-            <Link to="/register" className="cta-button">let's get jamming</Link>
-          </div>
-        </section>
-
         {/* Meet the Chef Section */}
         <section className="chef-section">
           <div className="chef-image-wrapper">

@@ -13,7 +13,6 @@ function Order() {
   const location = useLocation();
   const [formData, setFormData] = useState({
     breadQuantity: 0,
-    jamQuantity: 0,
     deliveryDate: '',
     notes: '',
     isRecurring: false
@@ -39,7 +38,6 @@ function Order() {
       setFormData(prev => ({
         ...prev,
         breadQuantity: prefill.breadQuantity || 0,
-        jamQuantity: prefill.jamQuantity || 0,
         notes: prefill.notes || ''
       }));
     }
@@ -62,10 +60,10 @@ function Order() {
     setError('');
   };
 
-  const handleQuantityClick = (quantity, type) => {
+  const handleQuantityClick = (quantity) => {
     setFormData(prev => ({
       ...prev,
-      [type === 'bread' ? 'breadQuantity' : 'jamQuantity']: quantity
+      breadQuantity: quantity
     }));
   };
 
@@ -75,8 +73,8 @@ function Order() {
     setLoading(true);
 
     // Validate that at least one item is ordered
-    if (parseInt(formData.breadQuantity) === 0 && parseInt(formData.jamQuantity) === 0) {
-      setError('Please select at least one item to order (bread or jam).');
+    if (parseInt(formData.breadQuantity) === 0) {
+      setError('Please select at least one loaf of bread to order.');
       setLoading(false);
       return;
     }
@@ -190,28 +188,28 @@ function Order() {
                   <button 
                     type="button" 
                     className={`quantity-btn ${formData.breadQuantity === 0 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(0, 'bread')}
+                    onClick={() => handleQuantityClick(0)}
                   >
                     None
                   </button>
                   <button 
                     type="button" 
                     className={`quantity-btn ${formData.breadQuantity === 1 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(1, 'bread')}
+                    onClick={() => handleQuantityClick(1)}
                   >
                     1 Loaf
                   </button>
                   <button 
                     type="button" 
                     className={`quantity-btn ${formData.breadQuantity === 2 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(2, 'bread')}
+                    onClick={() => handleQuantityClick(2)}
                   >
                     2 Loaves
                   </button>
                   <button 
                     type="button" 
                     className={`quantity-btn ${formData.breadQuantity === 3 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(3, 'bread')}
+                    onClick={() => handleQuantityClick(3)}
                   >
                     3 Loaves
                   </button>
@@ -221,50 +219,6 @@ function Order() {
                   id="breadQuantity" 
                   name="breadQuantity" 
                   value={formData.breadQuantity} 
-                  required 
-                />
-              </div>
-              
-              {/* Jam Selection */}
-              <div className="form-group">
-                <label htmlFor="jamQuantity">
-                  Jam of the Week <span className="supplies-tag">While Supplies Last</span>
-                </label>
-                <div className="quantity-selector">
-                  <button 
-                    type="button" 
-                    className={`quantity-btn jam-btn ${formData.jamQuantity === 0 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(0, 'jam')}
-                  >
-                    None
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`quantity-btn jam-btn ${formData.jamQuantity === 1 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(1, 'jam')}
-                  >
-                    1 Jar
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`quantity-btn jam-btn ${formData.jamQuantity === 2 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(2, 'jam')}
-                  >
-                    2 Jars
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`quantity-btn jam-btn ${formData.jamQuantity === 3 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(3, 'jam')}
-                  >
-                    3 Jars
-                  </button>
-                </div>
-                <input 
-                  type="hidden" 
-                  id="jamQuantity" 
-                  name="jamQuantity" 
-                  value={formData.jamQuantity} 
                   required 
                 />
               </div>

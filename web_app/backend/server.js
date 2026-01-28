@@ -270,10 +270,10 @@ app.post('/api/orders', requireAuth, (req, res) => {
         }
         
         const breadQty = parseInt(breadQuantity) || 0;
-        const jamQty = parseInt(jamQuantity) || 0;
+        const jamQty = 0; // Jam ordering is currently disabled
         
-        if (breadQty === 0 && jamQty === 0) {
-            return res.status(400).json({ error: 'Please select at least one item to order' });
+        if (breadQty === 0) {
+            return res.status(400).json({ error: 'Please select at least one loaf of bread to order' });
         }
         
         const orderTime = new Date().toISOString();
