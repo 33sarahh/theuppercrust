@@ -45,24 +45,13 @@ function Home() {
           </div>
         </div>
       </section>
-      <div className="container">
-        {/* Meet the Chef Section */}
-        <section className="chef-section">
-          <div className="chef-image-wrapper">
-            <img 
-              src={getImagePath('new headshot.jpg')}
-              alt="Baker portrait" 
-              className="chef-image grain-overlay" 
-            />
-          </div>
-          <div className="chef-content">
-            <h2 className="section-heading">Bread has always been the center of my table.</h2>
-            <p className="chef-blurb">
-              I grew up in a household where fresh bread was a daily staple (often topped simply with butter, jam, salami, or cheese) straight from the local bakery. When we moved states, my health-conscious Romanian mother perfected a four-ingredient ciabatta recipe using French flour. When I moved to university, I brought that recipe—and my trusty Dutch oven—to UATX, where I bake it fresh and share it here.
-            </p>
-          </div>
-        </section>
-      </div>
+      <section className="bio-image-section">
+        <img 
+          src={getImagePath('bio_and_butter.jpg')}
+          alt="My story, portrait, and spread the word with Kerrigold butter" 
+          className="bio-and-butter-image" 
+        />
+      </section>
     </>
   );
 }

@@ -75,7 +75,7 @@ body {
 .hero-section {
     padding: 0;
     margin: 0;
-    margin-bottom: 4rem;
+    margin-bottom: 0;
     margin-top: 0;
     position: relative;
     width: 100%;
@@ -297,6 +297,22 @@ body {
 
 .chef-section .section-heading {
     text-align: left;
+}
+
+/* Bio & Butter Image Section */
+.bio-image-section {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: block;
+}
+
+.bio-and-butter-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+    padding: 0;
 }
 
 /* Header Styles */
