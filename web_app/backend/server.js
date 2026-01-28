@@ -8,6 +8,21 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Root route - must be first
+app.get('/', function(req, res) {
+    res.json({ 
+        message: 'the upper crust API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth',
+            orders: '/api/orders',
+            reviews: '/api/reviews',
+            admin: '/api/admin'
+        }
+    });
+});
+
 // Session configuration
 app.use(session({
     secret: 'upper-crust-secret-key-change-in-production',
@@ -87,6 +102,59 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 console.error('Error creating orders table:', err.message);
             } else {
                 console.log('Orders table ready');
+                
+                // Migration: Add missing columns if they don't exist
+                db.all("PRAGMA table_info(orders)", (err, columns) => {
+                    if (err) {
+                        console.error('Error checking orders table schema:', err.message);
+                        return;
+                    }
+                    
+                    const columnNames = columns.map(col => col.name);
+                    const migrations = [];
+                    
+                    // Add userId column if missing
+                    if (!columnNames.includes('userId')) {
+                        migrations.push(() => {
+                            db.run("ALTER TABLE orders ADD COLUMN userId INTEGER", (err) => {
+                                if (err) {
+                                    console.error('Error adding userId column:', err.message);
+                                } else {
+                                    console.log('Added userId column to orders table');
+                                }
+                            });
+                        });
+                    }
+                    
+                    // Add isRecurring column if missing
+                    if (!columnNames.includes('isRecurring')) {
+                        migrations.push(() => {
+                            db.run("ALTER TABLE orders ADD COLUMN isRecurring INTEGER DEFAULT 0", (err) => {
+                                if (err) {
+                                    console.error('Error adding isRecurring column:', err.message);
+                                } else {
+                                    console.log('Added isRecurring column to orders table');
+                                }
+                            });
+                        });
+                    }
+                    
+                    // Add recurringFrequency column if missing
+                    if (!columnNames.includes('recurringFrequency')) {
+                        migrations.push(() => {
+                            db.run("ALTER TABLE orders ADD COLUMN recurringFrequency TEXT", (err) => {
+                                if (err) {
+                                    console.error('Error adding recurringFrequency column:', err.message);
+                                } else {
+                                    console.log('Added recurringFrequency column to orders table');
+                                }
+                            });
+                        });
+                    }
+                    
+                    // Execute all migrations
+                    migrations.forEach(migration => migration());
+                });
             }
         });
         
