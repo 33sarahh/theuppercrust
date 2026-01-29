@@ -311,7 +311,73 @@ app.get('/api/auth/me', (req, res) => {
     });
 });
 
+// ========== Week / Monday delivery logic ==========
+// Bread is delivered every Monday. Cutoff: Saturday 5pm CST (America/Chicago).
+// Orders after that receive delivery the following week.
+const LOAVES_PER_WEEK = 10;
+const CUTOFF_DAY = 6;   // Saturday
+const CUTOFF_HOUR = 17; // 5pm CST
+const CHICAGO_TZ = 'America/Chicago';
+
+function getChicagoTimeParts(date) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: CHICAGO_TZ,
+        weekday: 'long',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+    }).formatToParts(date);
+    const get = (type) => (parts.find(p => p.type === type) || {}).value;
+    const weekday = get('weekday');
+    const dayMap = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 0 };
+    return {
+        day: dayMap[weekday] ?? 0,
+        hour: parseInt(get('hour'), 10) || 0,
+        minute: parseInt(get('minute'), 10) || 0
+    };
+}
+
+function isPastCutoffCST(date) {
+    const { day, hour, minute } = getChicagoTimeParts(date);
+    return day === CUTOFF_DAY && (hour > CUTOFF_HOUR || (hour === CUTOFF_HOUR && minute >= 0));
+}
+
+function getNextDeliveryMonday(fromDate) {
+    const d = new Date(fromDate);
+    const pastCutoff = isPastCutoffCST(d);
+    if (pastCutoff) {
+        // After Saturday 5pm CST → delivery is the Monday after next (9 days from today)
+        d.setDate(d.getDate() + 9);
+    } else {
+        // Next Monday (in Chicago: which "today" is it?)
+        const { day } = getChicagoTimeParts(d);
+        const daysToAdd = day === 1 ? 7 : (8 - day + 7) % 7;
+        d.setDate(d.getDate() + (daysToAdd === 0 ? 7 : daysToAdd));
+    }
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().split('T')[0];
+}
+
 // ========== Orders Routes ==========
+
+// Get week info for ordering (next delivery Monday, total ordered, remaining) — public for order page
+app.get('/api/orders/week-info', (req, res) => {
+    const now = new Date();
+    const afterCutoff = isPastCutoffCST(now);
+    const deliveryMonday = getNextDeliveryMonday(now);
+    db.get(
+        `SELECT COALESCE(SUM(breadQuantity), 0) as total FROM orders WHERE deliveryDate = ? AND status != 'cancelled'`,
+        [deliveryMonday],
+        (err, row) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            const totalOrdered = row ? row.total : 0;
+            const remaining = Math.max(0, LOAVES_PER_WEEK - totalOrdered);
+            res.json({ deliveryMonday, totalOrdered, remaining, maxLoaves: LOAVES_PER_WEEK, afterCutoff });
+        }
+    );
+});
 
 // Get all orders for authenticated user
 app.get('/api/orders', requireAuth, (req, res) => {
@@ -330,10 +396,10 @@ app.get('/api/orders', requireAuth, (req, res) => {
     );
 });
 
-// Create a new order
+// Create a new order (delivery is always next Monday; cutoff Saturday 5pm)
 app.post('/api/orders', requireAuth, (req, res) => {
     const userId = req.session.userId;
-    const { breadQuantity, jamQuantity, deliveryDate, notes, isRecurring } = req.body;
+    const { breadQuantity, deliveryDate, notes, isRecurring } = req.body;
     
     db.get('SELECT firstName, lastName, phone, apartment FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
@@ -343,46 +409,59 @@ app.post('/api/orders', requireAuth, (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        if (!deliveryDate) {
-            return res.status(400).json({ error: 'Delivery date is required' });
-        }
+        const expectedMonday = getNextDeliveryMonday(new Date());
+        const deliveryDateToUse = deliveryDate && deliveryDate === expectedMonday ? deliveryDate : expectedMonday;
         
-        const breadQty = parseInt(breadQuantity) || 0;
-        const jamQty = 0; // Jam ordering is currently disabled
+        const breadQty = Math.min(3, Math.max(1, parseInt(breadQuantity) || 0));
+        const jamQty = 0;
         
         if (breadQty === 0) {
             return res.status(400).json({ error: 'Please select at least one loaf of bread to order' });
         }
         
-        const orderTime = new Date().toISOString();
-        const name = `${user.firstName} ${user.lastName}`;
-        const recurring = isRecurring ? 1 : 0;
-        const recurringFreq = isRecurring ? 'weekly' : null;
-        
-        db.run(
-            `INSERT INTO orders (userId, name, phone, apartment, breadQuantity, jamQuantity, deliveryDate, notes, orderTime, status, isRecurring, recurringFrequency)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [userId, name, user.phone, user.apartment, breadQty, jamQty, deliveryDate, notes || '', orderTime, 'pending', recurring, recurringFreq],
-            function(err) {
+        db.get(
+            `SELECT COALESCE(SUM(breadQuantity), 0) as total FROM orders WHERE deliveryDate = ? AND status != 'cancelled'`,
+            [deliveryDateToUse],
+            (err, row) => {
                 if (err) {
-                    res.status(500).json({ error: err.message });
-                    return;
+                    return res.status(500).json({ error: err.message });
                 }
-                res.status(201).json({
-                    id: this.lastID,
-                    userId,
-                    name,
-                    phone: user.phone,
-                    apartment: user.apartment,
-                    breadQuantity: breadQty,
-                    jamQuantity: jamQty,
-                    deliveryDate,
-                    notes: notes || '',
-                    orderTime,
-                    status: 'pending',
-                    isRecurring: recurring,
-                    recurringFrequency: recurringFreq
-                });
+                const totalOrdered = row ? row.total : 0;
+                if (totalOrdered + breadQty > LOAVES_PER_WEEK) {
+                    return res.status(400).json({ error: `Only ${LOAVES_PER_WEEK - totalOrdered} loaf(ves) left for that Monday. Please choose a smaller quantity.` });
+                }
+                
+                const orderTime = new Date().toISOString();
+                const name = `${user.firstName} ${user.lastName}`;
+                const recurring = isRecurring ? 1 : 0;
+                const recurringFreq = isRecurring ? 'weekly' : null;
+                
+                db.run(
+                    `INSERT INTO orders (userId, name, phone, apartment, breadQuantity, jamQuantity, deliveryDate, notes, orderTime, status, isRecurring, recurringFrequency)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [userId, name, user.phone, user.apartment, breadQty, jamQty, deliveryDateToUse, notes || '', orderTime, 'pending', recurring, recurringFreq],
+                    function(err) {
+                        if (err) {
+                            res.status(500).json({ error: err.message });
+                            return;
+                        }
+                        res.status(201).json({
+                            id: this.lastID,
+                            userId,
+                            name,
+                            phone: user.phone,
+                            apartment: user.apartment,
+                            breadQuantity: breadQty,
+                            jamQuantity: jamQty,
+                            deliveryDate: deliveryDateToUse,
+                            notes: notes || '',
+                            orderTime,
+                            status: 'pending',
+                            isRecurring: recurring,
+                            recurringFrequency: recurringFreq
+                        });
+                    }
+                );
             }
         );
     });
@@ -457,7 +536,26 @@ app.get('/api/admin/orders', (req, res) => {
     });
 });
 
-// Get calendar data (orders grouped by delivery date)
+// Get prep summary for next Monday (loaves to prep, list of orders)
+app.get('/api/admin/prep', (req, res) => {
+    const deliveryMonday = getNextDeliveryMonday(new Date());
+    db.all(
+        `SELECT o.id, o.breadQuantity, o.name, o.apartment, o.notes
+         FROM orders o
+         WHERE o.deliveryDate = ? AND o.status != 'cancelled'
+         ORDER BY o.orderTime ASC`,
+        [deliveryMonday],
+        (err, orders) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            const totalLoaves = orders.reduce((sum, o) => sum + (o.breadQuantity || 0), 0);
+            res.json({ deliveryMonday, totalLoaves, orders });
+        }
+    );
+});
+
+// Get calendar data (orders grouped by delivery date) — kept for backwards compat but admin uses prep now
 app.get('/api/admin/calendar', (req, res) => {
     db.all(
         `SELECT 

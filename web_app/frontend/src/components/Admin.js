@@ -7,29 +7,27 @@ const getImagePath = (filename) => {
 };
 
 function Admin() {
-  const [calendarData, setCalendarData] = useState({});
+  const [prepData, setPrepData] = useState(null);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState('calendar'); // 'calendar' or 'users'
+  const [activeView, setActiveView] = useState('prep'); // 'prep' or 'users'
 
   useEffect(() => {
-    fetchCalendarData();
+    fetchPrepData();
     fetchUsers();
     fetchOrders();
   }, []);
 
-  const fetchCalendarData = async () => {
+  const fetchPrepData = async () => {
     try {
-      const response = await fetch('/api/admin/calendar');
+      const response = await fetch('/api/admin/prep');
       if (response.ok) {
         const data = await response.json();
-        setCalendarData(data);
+        setPrepData(data);
       }
     } catch (error) {
-      console.error('Failed to fetch calendar data:', error);
+      console.error('Failed to fetch prep data:', error);
     } finally {
       setLoading(false);
     }
@@ -59,18 +57,6 @@ function Admin() {
     }
   };
 
-  const fetchOrderDetails = async (orderId) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedOrder(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch order details:', error);
-    }
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -81,31 +67,9 @@ function Admin() {
     });
   };
 
-  const getDatesInRange = () => {
-    const dates = [];
-    const today = new Date();
-    const endDate = new Date();
-    endDate.setDate(today.getDate() + 60); // Show next 60 days
-
-    for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
-      dates.push(new Date(d));
-    }
-    return dates;
-  };
-
-  const formatDateKey = (date) => {
-    return date.toISOString().split('T')[0];
-  };
-
-  const handleDateClick = (dateKey) => {
-    if (calendarData[dateKey] && calendarData[dateKey].length > 0) {
-      setSelectedDate(dateKey);
-      setSelectedOrder(null);
-    }
-  };
-
-  const handleOrderClick = (orderId) => {
-    fetchOrderDetails(orderId);
+  const formatMonday = (dateStr) => {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   };
 
   if (loading) {
@@ -127,10 +91,10 @@ function Admin() {
       <main className="admin-main">
         <div className="admin-tabs">
           <button
-            className={`tab-button ${activeView === 'calendar' ? 'active' : ''}`}
-            onClick={() => setActiveView('calendar')}
+            className={`tab-button ${activeView === 'prep' ? 'active' : ''}`}
+            onClick={() => setActiveView('prep')}
           >
-            Delivery Calendar
+            This Week's Prep
           </button>
           <button
             className={`tab-button ${activeView === 'users' ? 'active' : ''}`}
@@ -140,124 +104,33 @@ function Admin() {
           </button>
         </div>
 
-        {activeView === 'calendar' && (
-          <div className="calendar-view">
-            <h2>Delivery Calendar</h2>
-            <div className="calendar-grid">
-              {getDatesInRange().map((date) => {
-                const dateKey = formatDateKey(date);
-                const dayOrders = calendarData[dateKey] || [];
-                const isToday = formatDateKey(new Date()) === dateKey;
-                const isPast = date < new Date() && !isToday;
-
-                return (
-                  <div
-                    key={dateKey}
-                    className={`calendar-day ${isToday ? 'today' : ''} ${isPast ? 'past' : ''} ${dayOrders.length > 0 ? 'has-orders' : ''}`}
-                    onClick={() => handleDateClick(dateKey)}
-                  >
-                    <div className="calendar-day-header">
-                      <div className="calendar-date">{date.getDate()}</div>
-                      <div className="calendar-day-name">
-                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                      </div>
-                    </div>
-                    {dayOrders.length > 0 && (
-                      <div className="calendar-orders">
-                        {dayOrders.slice(0, 3).map((order) => (
-                          <div
-                            key={order.id}
-                            className="calendar-order-item"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOrderClick(order.id);
-                            }}
-                          >
-                            <img
-                              src={getImagePath('profile_bread.jpg')}
-                              alt="User"
-                              className="calendar-avatar"
-                            />
-                            <span className="calendar-order-name">
-                              {order.firstName} {order.lastName}
-                            </span>
-                            <span className="calendar-order-items">
-                              {order.breadQuantity > 0 && `${order.breadQuantity} bread`}
-                              {order.breadQuantity > 0 && order.jamQuantity > 0 && ', '}
-                              {order.jamQuantity > 0 && `${order.jamQuantity} jam`}
-                            </span>
-                          </div>
-                        ))}
-                        {dayOrders.length > 3 && (
-                          <div className="calendar-more">+{dayOrders.length - 3} more</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {selectedDate && calendarData[selectedDate] && (
-              <div className="selected-date-orders">
-                <h3>Orders for {formatDate(selectedDate)}</h3>
-                <div className="date-orders-list">
-                  {calendarData[selectedDate].map((order) => (
-                    <div
-                      key={order.id}
-                      className="date-order-card"
-                      onClick={() => handleOrderClick(order.id)}
-                    >
-                      <div className="date-order-header">
-                        <img
-                          src={getImagePath('profile_bread.jpg')}
-                          alt="User"
-                          className="date-order-avatar"
-                        />
-                        <div>
-                          <h4>{order.firstName} {order.lastName}</h4>
-                          <p>Apt {order.apartment} • {order.phone}</p>
+        {activeView === 'prep' && (
+          <div className="prep-view">
+            {prepData && (
+              <>
+                <div className="prep-header">
+                  <h2>How many loaves you need to prep Sunday night</h2>
+                  <p className="prep-date">Delivery: {formatMonday(prepData.deliveryMonday)}</p>
+                  <p className="prep-count">{prepData.totalLoaves} {prepData.totalLoaves === 1 ? 'loaf' : 'loaves'}</p>
+                </div>
+                <div className="prep-orders-list">
+                  <h3>Orders for that Monday</h3>
+                  {prepData.orders.length === 0 ? (
+                    <p className="prep-empty">No orders yet for this Monday.</p>
+                  ) : (
+                    <div className="prep-order-cards">
+                      {prepData.orders.map((order) => (
+                        <div key={order.id} className="prep-order-card">
+                          <span className="prep-order-loaves">{order.breadQuantity} {order.breadQuantity === 1 ? 'loaf' : 'loaves'}</span>
+                          <span className="prep-order-name">{order.name}</span>
+                          <span className="prep-order-apt">Apt {order.apartment}</span>
+                          {order.notes ? <span className="prep-order-notes">{order.notes}</span> : null}
                         </div>
-                      </div>
-                      <div className="date-order-details">
-                        <p><strong>Bread:</strong> {order.breadQuantity} {order.breadQuantity === 1 ? 'loaf' : 'loaves'}</p>
-                        <p><strong>Jam:</strong> {order.jamQuantity} {order.jamQuantity === 1 ? 'jar' : 'jars'}</p>
-                        {order.isRecurring && <p><strong>Recurring:</strong> Weekly</p>}
-                        {order.notes && <p><strong>Notes:</strong> {order.notes}</p>}
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
-
-            {selectedOrder && (
-              <div className="order-detail-modal" onClick={() => setSelectedOrder(null)}>
-                <div className="order-detail-content" onClick={(e) => e.stopPropagation()}>
-                  <button className="close-modal" onClick={() => setSelectedOrder(null)}>×</button>
-                  <h2>Order Details</h2>
-                  <div className="order-detail-info">
-                    <div className="detail-section">
-                      <h3>Customer Information</h3>
-                      <p><strong>Name:</strong> {selectedOrder.firstName} {selectedOrder.lastName}</p>
-                      <p><strong>Email:</strong> {selectedOrder.email}</p>
-                      <p><strong>Phone:</strong> {selectedOrder.phone}</p>
-                      <p><strong>Apartment:</strong> {selectedOrder.apartment}</p>
-                    </div>
-                    <div className="detail-section">
-                      <h3>Order Information</h3>
-                      <p><strong>Order #:</strong> {selectedOrder.id}</p>
-                      <p><strong>Delivery Date:</strong> {formatDate(selectedOrder.deliveryDate)}</p>
-                      <p><strong>Order Date:</strong> {formatDate(selectedOrder.orderTime)}</p>
-                      <p><strong>Status:</strong> {selectedOrder.status}</p>
-                      <p><strong>Bread:</strong> {selectedOrder.breadQuantity} {selectedOrder.breadQuantity === 1 ? 'loaf' : 'loaves'}</p>
-                      <p><strong>Jam:</strong> {selectedOrder.jamQuantity} {selectedOrder.jamQuantity === 1 ? 'jar' : 'jars'}</p>
-                      {selectedOrder.isRecurring && <p><strong>Recurring:</strong> Weekly</p>}
-                      {selectedOrder.notes && <p><strong>Notes:</strong> {selectedOrder.notes}</p>}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
           </div>
         )}

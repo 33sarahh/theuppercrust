@@ -7,32 +7,61 @@ const getImagePath = (filename) => {
   return `/images/${encodeURIComponent(filename)}`;
 };
 
+// Next Monday for delivery — cutoff Saturday 5pm CST (matches backend)
+const MAX_LOAVES = 10;
+const CHICAGO_TZ = 'America/Chicago';
+
+function getChicagoTimeParts(date) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: CHICAGO_TZ,
+    weekday: 'long',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+  }).formatToParts(date);
+  const get = (type) => (parts.find(p => p.type === type) || {}).value;
+  const dayMap = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 0 };
+  return {
+    day: dayMap[get('weekday')] ?? 0,
+    hour: parseInt(get('hour'), 10) || 0,
+    minute: parseInt(get('minute'), 10) || 0
+  };
+}
+
+function getNextDeliveryMonday() {
+  const d = new Date();
+  const { day, hour, minute } = getChicagoTimeParts(d);
+  const pastCutoff = day === 6 && (hour > 17 || (hour === 17 && minute >= 0));
+  if (pastCutoff) {
+    d.setDate(d.getDate() + 9);
+  } else {
+    const daysToAdd = day === 1 ? 7 : (8 - day + 7) % 7;
+    d.setDate(d.getDate() + (daysToAdd === 0 ? 7 : daysToAdd));
+  }
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function Order() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
     breadQuantity: 1,
-    deliveryDate: '',
     notes: '',
     isRecurring: false
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [minDate, setMinDate] = useState('');
+  const [weekInfo, setWeekInfo] = useState(null);
 
   useEffect(() => {
-    // Set page title
     document.title = 'Place Your Order | the upper crust';
-    
-    // Redirect to login if not authenticated
     if (!authLoading && !user) {
       navigate('/login', { state: { from: { pathname: '/order' } } });
       return;
     }
-
-    // Handle prefilled data from reorder
     if (location.state?.prefill) {
       const prefill = location.state.prefill;
       setFormData(prev => ({
@@ -41,15 +70,15 @@ function Order() {
         notes: prefill.notes || ''
       }));
     }
-    
-    // Calculate minimum date (48 hours from now)
-    const now = new Date();
-    const minDateObj = new Date(now.getTime() + (48 * 60 * 60 * 1000));
-    const year = minDateObj.getFullYear();
-    const month = String(minDateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(minDateObj.getDate()).padStart(2, '0');
-    setMinDate(`${year}-${month}-${day}`);
   }, [user, authLoading, navigate, location]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/orders/week-info', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => data && setWeekInfo(data))
+      .catch(() => {});
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -71,21 +100,20 @@ function Order() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    // Validate that at least one item is ordered
     if (parseInt(formData.breadQuantity) === 0) {
       setError('Please select at least one loaf of bread to order.');
       setLoading(false);
       return;
     }
-
-    // Validate date
-    if (formData.deliveryDate < minDate) {
-      setError('Please select a delivery date at least 48 hours from now.');
+    if (weekInfo && weekInfo.remaining < parseInt(formData.breadQuantity)) {
+      setError(`Only ${weekInfo.remaining} loaf(ves) left this week. Please choose a smaller quantity.`);
       setLoading(false);
       return;
     }
-
+    const payload = {
+      ...formData,
+      deliveryDate: weekInfo ? weekInfo.deliveryMonday : null,
+    };
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -93,7 +121,7 @@ function Order() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -176,6 +204,26 @@ function Order() {
             <h2 className="order-title">Place Your Order</h2>
             <p className="order-subtitle">Fresh ciabatta, made to order and delivered to your door</p>
             <p className="order-user-info">Ordering as: {user.firstName} {user.lastName} (Apt {user.apartment})</p>
+
+            <div className="order-week-banners">
+              <p className="order-delivery-date">
+                Your order will be delivered on Monday, {weekInfo
+                  ? new Date(weekInfo.deliveryMonday + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                  : getNextDeliveryMonday().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+              </p>
+              {weekInfo?.afterCutoff && (
+                <p className="order-after-cutoff">
+                  You're ordering after Saturday at 5:00 PM. Your order will roll over to the next week.
+                </p>
+              )}
+              <p className="order-loaves-left">
+                {weekInfo == null
+                  ? `Max ${MAX_LOAVES} loaves per week. Loading availability…`
+                  : weekInfo.remaining <= 0
+                    ? `No loaves left this week (0 of ${weekInfo.maxLoaves ?? MAX_LOAVES}) — check back next week!`
+                    : `${weekInfo.remaining} of ${weekInfo.maxLoaves ?? MAX_LOAVES} loaves still available.`}
+              </p>
+            </div>
             
             {error && <div className="error-message">{error}</div>}
             
@@ -185,27 +233,21 @@ function Order() {
               <div className="form-group">
                 <label htmlFor="breadQuantity">Number of Loaves</label>
                 <div className="quantity-selector">
-                  <button 
-                    type="button" 
-                    className={`quantity-btn ${formData.breadQuantity === 1 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(1)}
-                  >
-                    1 Loaf
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`quantity-btn ${formData.breadQuantity === 2 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(2)}
-                  >
-                    2 Loaves
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`quantity-btn ${formData.breadQuantity === 3 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(3)}
-                  >
-                    3 Loaves
-                  </button>
+                  {[1, 2, 3].map((qty) => {
+                    const remaining = weekInfo ? weekInfo.remaining : 10;
+                    const disabled = remaining < qty;
+                    return (
+                      <button 
+                        key={qty}
+                        type="button" 
+                        className={`quantity-btn ${formData.breadQuantity === qty ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+                        onClick={() => !disabled && handleQuantityClick(qty)}
+                        disabled={disabled}
+                      >
+                        {qty} {qty === 1 ? 'Loaf' : 'Loaves'}
+                      </button>
+                    );
+                  })}
                 </div>
                 <input 
                   type="hidden" 
@@ -214,21 +256,9 @@ function Order() {
                   value={formData.breadQuantity} 
                   required 
                 />
-              </div>
-              
-              {/* Delivery Date */}
-              <div className="form-group">
-                <label htmlFor="deliveryDate">Delivery Date</label>
-                <input 
-                  type="date" 
-                  id="deliveryDate" 
-                  name="deliveryDate" 
-                  required
-                  min={minDate}
-                  value={formData.deliveryDate}
-                  onChange={handleInputChange}
-                />
-                <small className="form-hint">Orders must be placed at least 48 hours in advance</small>
+                {weekInfo && weekInfo.remaining > 0 && (
+                  <small className="form-hint">Place your order by Saturday at 5:00 PM and your bread arrives this Monday. Orders after that roll over to the next week.</small>
+                )}
               </div>
               
               {/* Notes for Baker */}
@@ -262,9 +292,9 @@ function Order() {
               <button 
                 type="submit" 
                 className="submit-button"
-                disabled={loading}
+                disabled={loading || !weekInfo || weekInfo.remaining === 0}
               >
-                {loading ? 'Placing Order...' : 'Place Order'}
+                {loading ? 'Placing Order...' : weekInfo && weekInfo.remaining === 0 ? 'Sold Out This Week' : 'Place Order'}
               </button>
             </form>
           </div>

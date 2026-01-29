@@ -471,7 +471,36 @@ header {
     font-size: 1.1rem;
     color: var(--text-light);
     font-style: italic;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.order-week-banners {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    background-color: rgba(139, 115, 85, 0.12);
+    border-radius: 6px;
+    border-left: 4px solid var(--rustic-brown);
+}
+
+.order-delivery-date {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+}
+
+.order-after-cutoff {
+    font-size: 0.95rem;
+    color: var(--rustic-brown);
+    margin: 0.35rem 0;
+    font-style: italic;
+}
+
+.order-loaves-left {
+    font-size: 1rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin: 0;
 }
 
 .order-form {
@@ -566,6 +595,13 @@ header {
     background-color: var(--rustic-brown);
     color: white;
     border-color: var(--rustic-brown);
+}
+
+.quantity-btn.disabled,
+.quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .supplies-tag {
@@ -1264,6 +1300,97 @@ footer {
     gap: 1rem;
     margin-bottom: 2rem;
     border-bottom: 2px solid var(--warm-beige);
+}
+
+/* Prep view (this week's Monday) */
+.prep-view {
+    max-width: 720px;
+}
+
+.prep-header {
+    background-color: var(--warm-beige);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--rustic-brown);
+}
+
+.prep-header h2 {
+    font-family: 'GFS Didot', serif;
+    font-style: italic;
+    font-size: 1.75rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.prep-date {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.prep-count {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--rustic-brown);
+    margin: 0;
+}
+
+.prep-orders-list h3 {
+    font-family: 'GFS Didot', serif;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+.prep-order-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.prep-order-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1rem 1.25rem;
+    background-color: white;
+    border: 1px solid var(--warm-beige);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.prep-order-loaves {
+    font-weight: 700;
+    color: var(--rustic-brown);
+}
+
+.prep-order-name {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.prep-order-apt {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.prep-order-notes {
+    grid-column: 1 / -1;
+    margin-top: 0.35rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--warm-beige);
+    font-style: italic;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.prep-empty {
+    color: var(--text-light);
+    font-style: italic;
+    padding: 1rem 0;
 }
 
 .calendar-view h2,
