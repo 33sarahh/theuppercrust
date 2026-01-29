@@ -1,0 +1,9 @@
+{
+  "name": "upper-crust",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix backend ci && npm --prefix frontend ci && npm --prefix frontend run build",
+    "start": "NODE_ENV=production node backend/server.js"
+  }
+}
+

@@ -7,6 +7,10 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+// Railway/hosted environments often sit behind a proxy (needed for secure cookies)
+app.set('trust proxy', 1);
 
 // Root route - must be first
 app.get('/', function(req, res) {
@@ -25,26 +29,32 @@ app.get('/', function(req, res) {
 
 // Session configuration
 app.use(session({
-    secret: 'upper-crust-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET || 'upper-crust-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: IS_PROD,
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
 
 // Middleware
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
+// In production we serve the React app from the same origin, so CORS isn't needed.
+if (!IS_PROD) {
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+    }));
+}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from frontend public directory
 app.use('/images', express.static(path.join(__dirname, '../frontend/public/images')));
+
+// Serve React production build (single-service deploy)
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Middleware to check authentication
 const requireAuth = (req, res, next) => {
@@ -517,6 +527,11 @@ app.get('/api/admin/orders/:id', (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'the upper crust API is running' });
+});
+
+// React SPA fallback (must be after API routes)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 // Start server

@@ -190,6 +190,8 @@ body {
     background-color: #DBCE80;
     color: white;
     box-shadow: 0 4px 15px rgba(219, 206, 128, 0.4);
+    font-size: 1.9rem;
+    padding: 1.5rem 4rem;
 }
 
 .cta-button.hero-cta:hover {
@@ -723,8 +725,8 @@ footer {
     }
     
     .hero-button-overlay .cta-button {
-        font-size: 1rem;
-        padding: 0.875rem 2rem;
+        font-size: 1.5rem;
+        padding: 1.25rem 3rem;
     }
     
     .chef-section {
