@@ -12,7 +12,7 @@ function Order() {
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
-    breadQuantity: 0,
+    breadQuantity: 1,
     deliveryDate: '',
     notes: '',
     isRecurring: false
@@ -37,7 +37,7 @@ function Order() {
       const prefill = location.state.prefill;
       setFormData(prev => ({
         ...prev,
-        breadQuantity: prefill.breadQuantity || 0,
+        breadQuantity: prefill.breadQuantity || 1,
         notes: prefill.notes || ''
       }));
     }
@@ -185,13 +185,6 @@ function Order() {
               <div className="form-group">
                 <label htmlFor="breadQuantity">Number of Loaves</label>
                 <div className="quantity-selector">
-                  <button 
-                    type="button" 
-                    className={`quantity-btn ${formData.breadQuantity === 0 ? 'active' : ''}`}
-                    onClick={() => handleQuantityClick(0)}
-                  >
-                    None
-                  </button>
                   <button 
                     type="button" 
                     className={`quantity-btn ${formData.breadQuantity === 1 ? 'active' : ''}`}
