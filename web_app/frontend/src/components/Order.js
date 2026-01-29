@@ -286,7 +286,6 @@ function Order() {
                   />
                   <span>Make this a weekly recurring order</span>
                 </label>
-                <small className="form-hint">Your order will automatically repeat every week</small>
               </div>
 
               <button 

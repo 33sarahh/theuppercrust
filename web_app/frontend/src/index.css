@@ -351,6 +351,7 @@ header {
 .order-main {
     min-height: calc(100vh - 200px);
     padding-bottom: 3rem;
+    position: relative;
 }
 
 .order-section {
@@ -1276,7 +1277,7 @@ footer {
 .recurring-checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 20rem;
     cursor: pointer;
     font-weight: 600;
     color: var(--text-dark);
@@ -1287,6 +1288,41 @@ footer {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    accent-color: #c9a882;
+}
+
+.recurring-checkbox:checked {
+    accent-color: #c9a882;
+}
+
+/* For better browser compatibility */
+.recurring-checkbox[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #8b7355;
+    border-radius: 3px;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.recurring-checkbox[type="checkbox"]:checked {
+    background-color: #c9a882;
+    border-color: #c9a882;
+}
+
+.recurring-checkbox[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 /* ========== Admin Styles ========== */
